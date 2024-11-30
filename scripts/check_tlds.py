@@ -16,15 +16,20 @@ def get_new_tlds() -> Tuple[Set[str], str]:
     lines = content.split('\n')
     return {line.strip() for line in lines if line.strip() and not line.startswith('#')}, ''
 
+def ensure_readme_exists():
+    """Create README.md if it doesn't exist"""
+    if not os.path.exists('README.md'):
+        with open('README.md', 'w') as f:
+            f.write('# TLD Monitor\n\nMonitoring changes in IANA TLD list.\n\n')
+
 def update_readme(added: Set[str], removed: Set[str], total: int):
     """Update the README.md file with new statistics."""
+    ensure_readme_exists()
     today = datetime.now().strftime('%Y-%m-%d')
     
     # Read existing README content
-    readme_content = []
-    if os.path.exists('README.md'):
-        with open('README.md', 'r') as f:
-            readme_content = f.readlines()
+    with open('README.md', 'r') as f:
+        readme_content = f.readlines()
     
     # Find where the statistics section starts
     stats_start = -1
@@ -102,20 +107,21 @@ def update_readme(added: Set[str], removed: Set[str], total: int):
         f.writelines(new_content)
 
 def main():
+    ensure_readme_exists()  # Make sure README.md exists
     current_tlds = get_current_tlds()
     new_tlds, _ = get_new_tlds()
     
     added = new_tlds - current_tlds
     removed = current_tlds - new_tlds
     
+    # Always update the README with current statistics, even if no changes
+    update_readme(added, removed, len(new_tlds))
+    
     if added or removed:
         # Update the TLDs file (without the version line)
         with open('tlds-alpha-by-domain.txt', 'w') as f:
             for tld in sorted(new_tlds):
                 f.write(tld + '\n')
-        
-        # Update README with statistics
-        update_readme(added, removed, len(new_tlds))
         
         # Exit with status 1 to indicate changes were made
         exit(1)

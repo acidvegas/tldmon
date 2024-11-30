@@ -21,16 +21,18 @@ jobs:
         python-version: '3.x'
     
     - name: Check for TLD updates
-      id: check
+      run: python scripts/check_tlds.py
+    
+    - name: Check for changes
+      id: check-changes
       run: |
-        python scripts/check_tlds.py
-        echo "status=$?" >> $GITHUB_OUTPUT
+        git add README.md tlds-alpha-by-domain.txt
+        git diff --staged --quiet || echo "changes=true" >> $GITHUB_OUTPUT
     
     - name: Commit changes if any
-      if: steps.check.outputs.status == '1'
+      if: steps.check-changes.outputs.changes == 'true'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add tlds-alpha-by-domain.txt README.md
         git commit -m "Update TLD list and statistics [skip ci]"
-        git push 
+        git push
