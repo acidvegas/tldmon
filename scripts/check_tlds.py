@@ -5,7 +5,7 @@ from typing import Set, Tuple
 
 def get_current_tlds() -> Set[str]:
     """Read current TLDs from the repository file."""
-    with open('tlds-alpha-by-domain.txt', 'r') as f:
+    with open('tlds.txt', 'r') as f:
         lines = f.readlines()
     return {line.strip() for line in lines if not line.startswith('#')}
 
@@ -20,7 +20,15 @@ def ensure_readme_exists():
     """Create README.md if it doesn't exist"""
     if not os.path.exists('README.md'):
         with open('README.md', 'w') as f:
-            f.write('# TLD Monitor\n\nMonitoring changes in IANA TLD list.\n\n')
+            f.write('''# TLD Monitor
+
+This repository monitors the [IANA Top Level Domain list](https://data.iana.org/TLD/tlds-alpha-by-domain.txt) daily for changes. It automatically detects when new TLDs are added or removed and updates this README with the changes.
+
+The script runs daily at midnight UTC to check for updates.\n\n''')
+
+def format_number(num: int) -> str:
+    """Format number with comma separators"""
+    return f"{num:,}"
 
 def update_readme(added: Set[str], removed: Set[str], total: int):
     """Update the README.md file with new statistics."""
@@ -45,7 +53,8 @@ def update_readme(added: Set[str], removed: Set[str], total: int):
             '\n## TLD Statistics\n\n',
             '| Metric | Value |\n',
             '|--------|-------|\n',
-            f'| Total TLDs | {total} |\n\n',
+            f'| Total TLDs | {format_number(total)} |\n',
+            f'| Last Checked | {today} |\n\n',
             '### Changes Log\n\n',
             '| Date | Type | TLDs |\n',
             '|------|------|------|\n'
@@ -61,7 +70,8 @@ def update_readme(added: Set[str], removed: Set[str], total: int):
             '\n',
             '| Metric | Value |\n',
             '|--------|-------|\n',
-            f'| Total TLDs | {total} |\n\n',
+            f'| Total TLDs | {format_number(total)} |\n',
+            f'| Last Checked | {today} |\n\n',
             '### Changes Log\n\n'
         ])
 
@@ -114,12 +124,12 @@ def main():
     added = new_tlds - current_tlds
     removed = current_tlds - new_tlds
     
-    # Always update the README with current statistics, even if no changes
+    # Always update the README with current statistics
     update_readme(added, removed, len(new_tlds))
     
     if added or removed:
         # Update the TLDs file (without the version line)
-        with open('tlds-alpha-by-domain.txt', 'w') as f:
+        with open('tlds.txt', 'w') as f:
             for tld in sorted(new_tlds):
                 f.write(tld + '\n')
         
