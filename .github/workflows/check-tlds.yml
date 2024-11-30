@@ -1,0 +1,34 @@
+name: Check TLD Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  check-tlds:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Check for TLD updates
+      run: python scripts/check_tlds.py
+    
+    - name: Commit changes if any
+      run: |
+        if [ $? -eq 1 ]; then
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add tlds-alpha-by-domain.txt README.md
+          git commit -m "Update TLD list and statistics [skip ci]"
+          git push
+        fi 
