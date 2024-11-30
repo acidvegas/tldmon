@@ -26,7 +26,7 @@ jobs:
     - name: Check for changes
       id: check-changes
       run: |
-        git add README.md tlds-alpha-by-domain.txt
+        git add README.md tlds.txt
         git diff --staged --quiet || echo "changes=true" >> $GITHUB_OUTPUT
     
     - name: Commit changes if any
