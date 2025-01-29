@@ -10,9 +10,7 @@ The script runs daily at midnight UTC to check for updates.
 | Metric | Value |
 |--------|-------|
 | Total TLDs | 1,445 |
-| Last Checked | 2025-01-28 |
+| Last Checked | 2025-01-29 |
 
 ### Changes Log
 
-| Date | Type | TLDs |
-|------|------|------|
